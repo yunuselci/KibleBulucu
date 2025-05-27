@@ -6,16 +6,98 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct ContentView: View {
+    @StateObject private var locationManager = LocationManager()
+    
+    private var qiblaDirection: Double {
+        guard let location = locationManager.location else { return 0 }
+        return QiblaCalculator.calculateQiblaDirection(from: location)
+    }
+    
+    private var currentHeading: Double {
+        locationManager.heading?.magneticHeading ?? 0
+    }
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Spacer()
+            
+            // Header
+            VStack(spacing: 8) {
+                Text("Kıble Bulucu")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Qibla Direction Finder")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 40)
+            
+            Spacer()
+            
+            // Main arrow view
+            if locationManager.location != nil && locationManager.heading != nil {
+                CompassView(
+                    currentHeading: currentHeading,
+                    qiblaDirection: qiblaDirection
+                )
+            } else {
+                // Loading state
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    
+                    Text("Finding your location...")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            // Location information
+            if let location = locationManager.location {
+                VStack(spacing: 12) {
+                    Text("Your Location")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                        .tracking(1)
+                    
+                    Text(String(format: "%.4f°, %.4f°", 
+                              location.coordinate.latitude,
+                              location.coordinate.longitude))
+                        .font(.body)
+                        .foregroundColor(.primary)
+                        .monospaced()
+                    
+                    Text("Qibla is at \(Int(qiblaDirection.rounded()))° from North")
+                        .font(.body)
+                        .foregroundColor(.primary)
+                        .padding(.top, 8)
+                }
+                .padding(.horizontal, 30)
+                .padding(.bottom, 40)
+            }
+            
+            // Error message
+            if let errorMessage = locationManager.errorMessage {
+                Text(errorMessage)
+                    .font(.footnote)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30)
+                    .padding(.bottom, 40)
+            }
         }
-        .padding()
+        .background(Color(.systemBackground))
+        .onAppear {
+            locationManager.requestLocationPermission()
+        }
     }
 }
 
