@@ -60,7 +60,7 @@ extension LocationManager: CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:
             startUpdatingLocation()
         case .denied, .restricted:
-            errorMessage = "Location access denied. Please enable location services in Settings."
+            errorMessage = "Konum erişimi reddedildi. Lütfen Ayarlar'dan konum servislerini etkinleştirin."
         case .notDetermined:
             break
         @unknown default:
@@ -69,6 +69,6 @@ extension LocationManager: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        errorMessage = "Location error: \(error.localizedDescription)"
+        errorMessage = "Konum hatası: \(error.localizedDescription)"
     }
 } 

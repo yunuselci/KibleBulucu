@@ -28,7 +28,7 @@ struct CompassView: View {
             
             // Direction info
             VStack(spacing: 8) {
-                Text("QIBLA")
+                Text("KIBLE")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)

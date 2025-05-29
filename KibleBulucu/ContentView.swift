@@ -31,7 +31,7 @@ struct ContentView: View {
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
                 
-                Text("Qibla Direction Finder")
+                Text("Kıble Yön Bulucu")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -51,7 +51,7 @@ struct ContentView: View {
                     ProgressView()
                         .scaleEffect(1.5)
                     
-                    Text("Finding your location...")
+                    Text("Konumunuz bulunuyor...")
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }
@@ -62,7 +62,7 @@ struct ContentView: View {
             // Location information
             if let location = locationManager.location {
                 VStack(spacing: 12) {
-                    Text("Your Location")
+                    Text("Konumunuz")
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
@@ -75,7 +75,7 @@ struct ContentView: View {
                         .foregroundColor(.primary)
                         .monospaced()
                     
-                    Text("Qibla is at \(Int(qiblaDirection.rounded()))° from North")
+                    Text("Kıble kuzeyden \(Int(qiblaDirection.rounded()))° açıda")
                         .font(.body)
                         .foregroundColor(.primary)
                         .padding(.top, 8)
