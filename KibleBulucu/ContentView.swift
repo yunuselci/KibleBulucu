@@ -10,6 +10,7 @@ import CoreLocation
 
 struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
+    @State private var wasAligned = false
     
     private var qiblaDirection: Double {
         guard let location = locationManager.location else { return 0 }
@@ -18,6 +19,24 @@ struct ContentView: View {
     
     private var currentHeading: Double {
         locationManager.heading?.magneticHeading ?? 0
+    }
+    
+    // Check if phone direction is aligned with qibla direction
+    private var isAligned: Bool {
+        let rotation = qiblaDirection - currentHeading
+        let angleDifference = abs(normalizeAngle(rotation))
+        return angleDifference <= 3 // Allow 3 degree tolerance
+    }
+    
+    // Normalize angle to be between -180 and 180
+    private func normalizeAngle(_ angle: Double) -> Double {
+        var normalizedAngle = angle.truncatingRemainder(dividingBy: 360)
+        if normalizedAngle > 180 {
+            normalizedAngle -= 360
+        } else if normalizedAngle < -180 {
+            normalizedAngle += 360
+        }
+        return normalizedAngle
     }
     
     var body: some View {
@@ -45,6 +64,21 @@ struct ContentView: View {
                     currentHeading: currentHeading,
                     qiblaDirection: qiblaDirection
                 )
+                .onChange(of: isAligned) { newValue in
+                    // Trigger haptic feedback when alignment changes
+                    if newValue != wasAligned {
+                        if newValue {
+                            // Success haptic when aligned
+                            let feedback = UINotificationFeedbackGenerator()
+                            feedback.notificationOccurred(.success)
+                        } else {
+                            // Light haptic when losing alignment
+                            let feedback = UIImpactFeedbackGenerator(style: .light)
+                            feedback.impactOccurred()
+                        }
+                        wasAligned = newValue
+                    }
+                }
             } else {
                 // Loading state
                 VStack(spacing: 20) {
