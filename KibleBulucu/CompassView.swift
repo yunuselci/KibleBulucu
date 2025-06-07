@@ -69,7 +69,7 @@ struct CompassView: View {
             
             // Direction info
             VStack(spacing: 8) {
-                Text("KIBLE")
+                Text("qibla_label", bundle: .main)
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
@@ -81,7 +81,7 @@ struct CompassView: View {
                     .foregroundColor(.primary)
                 
                 // Alignment status
-                Text(isAligned ? "HİZALANDI" : "HİZALA")
+                Text(isAligned ? String(localized: "aligned") : String(localized: "align"))
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(isAligned ? .green : .red)
