@@ -1,142 +1,122 @@
-# Kıble Bulucu - Qibla Direction Finder
+# Kıble Bulucu - Android
 
-A minimal, production-ready iOS application built with SwiftUI that helps users find the Qibla direction (towards Mecca) based on their current location and compass heading.
+Android version of the Qibla Finder application, built with Jetpack Compose and Kotlin. This app helps Muslims find the direction of the Qibla (direction towards the Kaaba in Mecca) from their current location.
 
-## 🕌 Features
+## Features
 
-- **Real-time Qibla Direction**: Calculates accurate Qibla direction using your GPS location
-- **Simple Arrow Interface**: Clean, centered arrow that rotates to point toward Qibla
-- **Live Rotation**: Arrow smoothly rotates as you turn your device based on compass heading
-- **Location Display**: Shows current latitude and longitude coordinates
-- **Minimal Design**: Clean, Apple-compliant interface following HIG 2025 standards
-- **Dark Mode Support**: Automatically adapts to system appearance settings
+- 🧭 **Real-time Compass**: Shows Qibla direction with a rotating arrow
+- 📍 **Location Services**: Uses GPS for accurate positioning
+- 🔴/🟢 **Visual Feedback**: Arrow changes color when aligned with Qibla
+- 📳 **Haptic Feedback**: Vibration when aligned with Qibla direction
+- 🌍 **Precise Calculation**: Uses great circle navigation for accurate Qibla direction
+- 🇹🇷 **Turkish Interface**: Full Turkish language support
+- ⚡ **Smooth Animations**: Fluid arrow rotation and color transitions
 
-## 📱 Requirements
+## Technical Implementation
 
-- iOS 16.0+
-- Xcode 16.0+
-- Swift 5.0+
-- Device with GPS and magnetometer (compass)
+### Architecture
+- **MVVM Pattern**: Using ViewModel and StateFlow for state management
+- **Jetpack Compose**: Modern declarative UI framework
+- **Coroutines**: For asynchronous operations
+- **Location Services**: Google Play Services Location API
+- **Sensors**: Android magnetometer and accelerometer for compass
 
-## 🚀 Installation
+### Core Components
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-username/KibleBulucu.git
-   cd KibleBulucu
-   ```
+#### 1. QiblaCalculator
+Handles the mathematical calculation of Qibla direction using:
+- Kaaba coordinates: 21.4225°N, 39.8262°E
+- Great circle navigation formulas
+- Angle normalization and formatting
 
-2. Open `KibleBulucu.xcodeproj` in Xcode
+#### 2. LocationManager
+Manages location and compass functionality:
+- GPS location updates with high accuracy
+- Compass heading calculation using magnetometer and accelerometer
+- Permission handling
+- Error states and Turkish error messages
 
-3. Select your development team in the project settings
+#### 3. CompassView
+Jetpack Compose UI component featuring:
+- Rotating arrow icon
+- Color-coded alignment status (red/green)
+- Smooth animations with 300ms duration
+- 3-degree tolerance for alignment detection
 
-4. Build and run on a physical device (required for location and compass features)
+#### 4. ContentView
+Main screen layout including:
+- Turkish header text
+- Loading states
+- Permission handling UI
+- Location information display
+- Error message handling
 
-## 🔧 Project Structure
+## Permissions Required
+
+- `ACCESS_FINE_LOCATION`: For GPS location
+- `ACCESS_COARSE_LOCATION`: Fallback location
+- `VIBRATE`: For haptic feedback
+
+## Hardware Requirements
+
+- GPS capability
+- Magnetometer sensor
+- Accelerometer sensor
+
+## Dependencies
+
+- Jetpack Compose
+- Google Play Services Location
+- Accompanist Permissions
+- Material Design 3
+- Lifecycle components
+
+## Building and Running
+
+1. Open the project in Android Studio
+2. Sync Gradle dependencies
+3. Run on a physical device (recommended for best sensor accuracy)
+4. Grant location permissions when prompted
+
+## Accuracy Notes
+
+- Best accuracy achieved on physical devices with quality sensors
+- Device should be held flat and away from magnetic interference
+- GPS accuracy depends on satellite signal strength
+- Compass accuracy may vary based on device calibration
+
+## Comparison with iOS Version
+
+This Android implementation mirrors the iOS version feature-for-feature:
+
+| Feature | iOS | Android |
+|---------|-----|---------|
+| Qibla Calculation | ✅ SwiftUI | ✅ Jetpack Compose |
+| Location Services | ✅ CoreLocation | ✅ Google Play Services |
+| Compass Integration | ✅ CLHeading | ✅ Sensor Fusion |
+| Haptic Feedback | ✅ UIFeedback | ✅ Vibrator API |
+| Smooth Animations | ✅ SwiftUI | ✅ Compose Animations |
+| Turkish Language | ✅ | ✅ |
+| Error Handling | ✅ | ✅ |
+| Permission Management | ✅ | ✅ |
+
+## Code Structure
 
 ```
-KibleBulucu/
-├── KibleBulucuApp.swift       # App entry point
-├── ContentView.swift          # Main UI view with simplified layout
-├── LocationManager.swift      # Core Location and heading management
-├── QiblaCalculator.swift      # Qibla direction calculation logic
-├── CompassView.swift          # Simple rotating arrow component
-└── Assets.xcassets/           # App icons and assets
+app/src/main/java/com/yunuselci/KibleBulucu/
+├── MainActivity.kt          # Main activity
+├── ContentView.kt          # Main screen composable
+├── CompassView.kt          # Compass UI component
+├── LocationManager.kt      # Location and compass logic
+├── QiblaCalculator.kt      # Qibla direction calculation
+└── Preview.kt              # Compose previews
 ```
 
-## 🧮 Qibla Calculation
+## Future Enhancements
 
-The app uses the following mathematical formula to calculate the Qibla direction:
-
-```swift
-let kaabaLatitude = 21.4225   // Kaaba coordinates
-let kaabaLongitude = 39.8262
-
-let deltaLon = kaabaLongitude - userLongitude
-let y = sin(deltaLon * π / 180)
-let x = cos(userLatitude * π / 180) * tan(kaabaLatitude * π / 180) - 
-        sin(userLatitude * π / 180) * cos(deltaLon * π / 180)
-
-let qiblaDirection = atan2(y, x) * 180 / π
-let normalizedDirection = (qiblaDirection + 360) % 360
-```
-
-## 🔐 Permissions
-
-The app requires the following permissions (configured in project settings):
-
-- **Location When In Use**: To determine your current position
-- **Device Capabilities**: Location services and magnetometer access
-
-Permission descriptions:
-- `NSLocationWhenInUseUsageDescription`: "Your location is required to determine the Qibla direction."
-
-## 🎨 User Interface
-
-- **Header**: App title and subtitle
-- **Central Arrow**: Large, green SF Symbol arrow (`arrow.up.circle.fill`) that rotates to point toward Qibla
-- **Direction Info**: Qibla bearing displayed below the arrow
-- **Location Info**: Current coordinates and directional description
-- **Loading State**: Progress indicator while acquiring location
-- **Error Handling**: User-friendly error messages
-
-## 🔄 Live Updates
-
-The app provides real-time updates for:
-- GPS location changes
-- Compass heading changes
-- Arrow rotation: `rotation = qiblaDirection - currentHeading`
-- Smooth animations with 0.3 second easing
-
-## 🏪 App Store Ready
-
-This project is configured for App Store submission:
-
-- ✅ Follows Apple Human Interface Guidelines
-- ✅ Proper privacy permissions
-- ✅ Clean, minimal design
-- ✅ No third-party dependencies
-- ✅ Production-ready code structure
-- ✅ Bundle identifier: `com.yunuselci.KibleBulucu`
-- ✅ iOS 16.0+ deployment target
-
-## 🧪 Testing
-
-The project includes:
-- Unit test target: `KibleBulucuTests`
-- UI test target: `KibleBulucuUITests`
-
-To run tests:
-1. Open the project in Xcode
-2. Press `Cmd+U` to run all tests
-3. Use the Test Navigator to run specific tests
-
-## 🔨 Building
-
-To build the project:
-
-```bash
-xcodebuild -project KibleBulucu.xcodeproj -scheme KibleBulucu -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4' clean build
-```
-
-Or simply open in Xcode and press `Cmd+B` to build.
-
-## 📝 License
-
-This project is available under the MIT License. See the LICENSE file for more info.
-
-## 🤝 Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📞 Support
-
-For support and questions, please open an issue in this repository.
-
----
-
-**Built with ❤️ using SwiftUI and Core Location** 
+- [ ] Dark/Light theme support
+- [ ] Multiple language support
+- [ ] Compass calibration guidance
+- [ ] Prayer times integration
+- [ ] Offline mode
+- [ ] Widget support 
