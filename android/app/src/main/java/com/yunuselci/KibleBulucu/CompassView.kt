@@ -57,19 +57,19 @@ fun CompassView(
     // Animated values
     val animatedRotation by animateFloatAsState(
         targetValue = smoothRotation.toFloat(),
-        animationSpec = tween(durationMillis = 300),
+        animationSpec = tween(durationMillis = 150),
         label = "rotation"
     )
     
     val arrowColor by animateColorAsState(
         targetValue = if (isAligned) Color(0xFF4CAF50) else Color(0xFFF44336),
-        animationSpec = tween(durationMillis = 300),
+        animationSpec = tween(durationMillis = 200),
         label = "color"
     )
     
     val statusColor by animateColorAsState(
         targetValue = if (isAligned) Color(0xFF4CAF50) else Color(0xFFF44336),
-        animationSpec = tween(durationMillis = 300),
+        animationSpec = tween(durationMillis = 200),
         label = "statusColor"
     )
     

@@ -50,6 +50,7 @@ fun ContentView(
     val heading by actualLocationManager.heading.collectAsStateWithLifecycle()
     val hasLocationPermission by actualLocationManager.hasLocationPermission.collectAsStateWithLifecycle()
     val errorMessage by actualLocationManager.errorMessage.collectAsStateWithLifecycle()
+    val hasCompassSensor by actualLocationManager.hasCompassSensor.collectAsStateWithLifecycle()
     
     // Calculate Qibla direction
     val qiblaDirection = remember(location) {
@@ -61,12 +62,8 @@ fun ContentView(
     // Check if phone direction is aligned with qibla direction
     val isAligned = remember(qiblaDirection, currentHeading) {
         val rotation = qiblaDirection - currentHeading
-        val normalizedRotation = ((rotation % 360) + 360) % 360
-        val angleDifference = if (normalizedRotation > 180) {
-            360 - normalizedRotation
-        } else {
-            normalizedRotation
-        }
+        val normalizedRotation = normalizeAngle(rotation)
+        val angleDifference = abs(normalizedRotation)
         angleDifference <= 3.0 // Allow 3 degree tolerance
     }
     
@@ -175,8 +172,38 @@ fun ContentView(
                     }
                 }
                 
-                location != null && heading != null -> {
-                    // Show compass when we have location and heading
+                location != null && !hasCompassSensor -> {
+                    // Show message when location is available but compass sensor is missing
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Kıble Bulundu",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        Text(
+                            text = "Kıble ${qiblaDirection.roundToInt()}° açıda.",
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Text(
+                            text = "Ancak cihazınızda pusula sensörü olmadığından kıble yönünü gösteremiyoruz",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                    }
+                }
+                
+                location != null && heading != null && hasCompassSensor -> {
+                    // Show compass when we have location, heading, and compass sensor
                     CompassView(
                         currentHeading = currentHeading,
                         qiblaDirection = qiblaDirection
@@ -249,4 +276,15 @@ fun ContentView(
             )
         }
     }
+}
+
+// Normalize angle to be between -180 and 180
+private fun normalizeAngle(angle: Double): Double {
+    var normalizedAngle = angle % 360
+    if (normalizedAngle > 180) {
+        normalizedAngle -= 360
+    } else if (normalizedAngle < -180) {
+        normalizedAngle += 360
+    }
+    return normalizedAngle
 } 

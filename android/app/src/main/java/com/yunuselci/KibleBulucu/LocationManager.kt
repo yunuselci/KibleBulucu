@@ -39,11 +39,18 @@ class LocationManager(private val context: Context) : ViewModel(), SensorEventLi
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
     
+    private val _hasCompassSensor = MutableStateFlow(true)
+    val hasCompassSensor: StateFlow<Boolean> = _hasCompassSensor.asStateFlow()
+    
     // Sensor data
     private var magneticField = FloatArray(3)
     private var gravity = FloatArray(3)
     private var lastAccelerometerUpdate = 0L
     private var lastMagnetometerUpdate = 0L
+    
+    // For compass smoothing
+    private var previousHeading: Double? = null
+    private val smoothingFactor = 0.1
     
     private val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
         .setWaitForAccurateLocation(false)
@@ -60,14 +67,14 @@ class LocationManager(private val context: Context) : ViewModel(), SensorEventLi
         }
         
         override fun onLocationAvailability(locationAvailability: LocationAvailability) {
-            if (!locationAvailability.isLocationAvailable) {
-                _errorMessage.value = "Konum servisleri kullanılamıyor"
-            }
+            // Removed the error message for location services unavailable
+            // Do not show "Konum servisleri kullanılamıyor" to the user
         }
     }
     
     init {
         checkLocationPermission()
+        checkCompassSensorAvailability()
     }
     
     fun checkLocationPermission() {
@@ -158,7 +165,22 @@ class LocationManager(private val context: Context) : ViewModel(), SensorEventLi
             var azimuthInDegrees = Math.toDegrees(azimuthInRadians.toDouble())
             azimuthInDegrees = (azimuthInDegrees + 360) % 360
             
-            _heading.value = azimuthInDegrees
+            // Apply smoothing to reduce jitter
+            val smoothedHeading = previousHeading?.let { prev ->
+                // Handle circular nature of angles (e.g., 359° to 1°)
+                val diff = azimuthInDegrees - prev
+                val adjustedDiff = when {
+                    diff > 180 -> diff - 360
+                    diff < -180 -> diff + 360
+                    else -> diff
+                }
+                
+                val smoothed = prev + (adjustedDiff * smoothingFactor)
+                (smoothed + 360) % 360
+            } ?: azimuthInDegrees
+            
+            previousHeading = smoothedHeading
+            _heading.value = smoothedHeading
         }
     }
     
@@ -169,5 +191,10 @@ class LocationManager(private val context: Context) : ViewModel(), SensorEventLi
     override fun onCleared() {
         super.onCleared()
         stopLocationUpdates()
+    }
+    
+    private fun checkCompassSensorAvailability() {
+        val hasCompass = magnetometer != null && accelerometer != null
+        _hasCompassSensor.value = hasCompass
     }
 } 
