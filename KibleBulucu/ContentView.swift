@@ -6,29 +6,17 @@
 //
 
 import SwiftUI
-import CoreLocation
 
 struct ContentView: View {
-    @StateObject private var locationManager = LocationManager()
+    @StateObject private var viewModel = PrayerTimesViewModel()
     @State private var wasAligned = false
-    
-    private var qiblaDirection: Double {
-        guard let location = locationManager.location else { return 0 }
-        return QiblaCalculator.calculateQiblaDirection(from: location)
-    }
-    
-    private var currentHeading: Double {
-        locationManager.heading?.magneticHeading ?? 0
-    }
-    
-    // Check if phone direction is aligned with qibla direction
+
     private var isAligned: Bool {
-        let rotation = qiblaDirection - currentHeading
+        let rotation = viewModel.qiblaDirection - viewModel.currentHeading
         let angleDifference = abs(normalizeAngle(rotation))
-        return angleDifference <= 3 // Allow 3 degree tolerance
+        return angleDifference <= 3
     }
-    
-    // Normalize angle to be between -180 and 180
+
     private func normalizeAngle(_ angle: Double) -> Double {
         var normalizedAngle = angle.truncatingRemainder(dividingBy: 360)
         if normalizedAngle > 180 {
@@ -38,41 +26,74 @@ struct ContentView: View {
         }
         return normalizedAngle
     }
-    
+
     var body: some View {
-        VStack {
-            Spacer()
-            
-            // Header
-            VStack(spacing: 8) {
-                Text("app_title", bundle: .main)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
-                Text("app_subtitle", bundle: .main)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    headerView
+                    compassSection
+                    prayerSummarySection
+                    errorSection
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 24)
             }
-            .padding(.top, 40)
-            
-            Spacer()
-            
-            // Main arrow view
-            if locationManager.location != nil && locationManager.heading != nil {
+            .background(Color(.systemGroupedBackground))
+            .navigationBarHidden(true)
+        }
+        .sheet(isPresented: $viewModel.showCitySelection) {
+            CitySelectionSheet(
+                currentSelection: viewModel.selectedLocation?.isAutomatic == false ? viewModel.selectedLocation : nil,
+                countries: viewModel.countries,
+                cities: viewModel.cities,
+                districts: viewModel.districts,
+                selectedCountryID: viewModel.selectedCountryID,
+                selectedCityID: viewModel.selectedCityID,
+                selectedDistrictID: viewModel.selectedDistrictID,
+                isLoading: viewModel.isLoadingLocations,
+                errorMessage: viewModel.errorMessage,
+                onSelectCountry: viewModel.selectCountry(_:),
+                onSelectCity: viewModel.selectCity(_:),
+                onSelectDistrict: viewModel.selectDistrict(_:),
+                onSave: viewModel.saveManualSelection
+            )
+        }
+        .sheet(isPresented: $viewModel.showNotificationSettings) {
+            NotificationSettingsView(
+                settings: viewModel.settings,
+                onNotificationsChanged: viewModel.updateNotificationPreference(enabled:),
+                onSoundChanged: viewModel.updateSoundPreference(enabled:),
+                onPrayerToggleChanged: viewModel.updatePrayerToggle(_:enabled:)
+            )
+        }
+        .onAppear {
+            viewModel.onAppear()
+        }
+    }
+
+    private var headerView: some View {
+        VStack(spacing: 4) {
+            Text(viewModel.todayDateText)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.primary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var compassSection: some View {
+        VStack(spacing: 18) {
+            if viewModel.hasCompassData {
                 CompassView(
-                    currentHeading: currentHeading,
-                    qiblaDirection: qiblaDirection
+                    currentHeading: viewModel.currentHeading,
+                    qiblaDirection: viewModel.qiblaDirection
                 )
                 .onChange(of: isAligned) { newValue in
-                    // Trigger haptic feedback when alignment changes
                     if newValue != wasAligned {
                         if newValue {
-                            // Success haptic when aligned
                             let feedback = UINotificationFeedbackGenerator()
                             feedback.notificationOccurred(.success)
                         } else {
-                            // Light haptic when losing alignment
                             let feedback = UIImpactFeedbackGenerator(style: .light)
                             feedback.impactOccurred()
                         }
@@ -80,57 +101,51 @@ struct ContentView: View {
                     }
                 }
             } else {
-                // Loading state
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     ProgressView()
-                        .scaleEffect(1.5)
-                    
+                        .scaleEffect(1.2)
+
                     Text("finding_location", bundle: .main)
                         .font(.headline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 80)
             }
-            
-            Spacer()
-            
-            // Location information
-            if let location = locationManager.location {
-                VStack(spacing: 12) {
-                    Text("your_location", bundle: .main)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                        .tracking(1)
-                    
-                    Text(String(format: "%.4f°, %.4f°", 
-                              location.coordinate.latitude,
-                              location.coordinate.longitude))
-                        .font(.body)
-                        .foregroundColor(.primary)
-                        .monospaced()
-                    
-                    Text(String(format: String(localized: "qibla_direction"), Int(qiblaDirection.rounded())))
-                        .font(.body)
-                        .foregroundColor(.primary)
-                        .padding(.top, 8)
-                }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 40)
-            }
-            
-            // Error message
-            if let errorMessage = locationManager.errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 30)
-                    .padding(.bottom, 40)
-            }
+
         }
-        .background(Color(.systemBackground))
-        .onAppear {
-            locationManager.requestLocationPermission()
+        .frame(maxWidth: .infinity)
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 6)
+        )
+    }
+
+    private var prayerSummarySection: some View {
+        PrayerTimesCard(
+            cityName: viewModel.citySummaryText,
+            dateText: viewModel.todayDateText,
+            currentPrayer: viewModel.currentPrayer,
+            nextPrayer: viewModel.nextPrayer,
+            countdownText: viewModel.countdownText,
+            prayerTimes: viewModel.prayerTimes,
+            isLoading: viewModel.isLoadingPrayerTimes,
+            onRefresh: viewModel.refreshManually,
+            onSelectCity: viewModel.presentLocationSelection,
+            onNotifications: { viewModel.showNotificationSettings = true }
+        )
+    }
+
+    @ViewBuilder
+    private var errorSection: some View {
+        if let errorMessage = viewModel.errorMessage {
+            Text(errorMessage)
+                .font(.footnote)
+                .foregroundStyle(.red)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
         }
     }
 }

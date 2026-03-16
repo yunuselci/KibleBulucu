@@ -9,7 +9,7 @@ import Foundation
 import CoreLocation
 import Combine
 
-class LocationManager: NSObject, ObservableObject {
+final class LocationManager: NSObject, ObservableObject {
     private let locationManager = CLLocationManager()
     
     @Published var location: CLLocation?
@@ -21,10 +21,18 @@ class LocationManager: NSObject, ObservableObject {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 250
         locationManager.headingFilter = 1.0
+        // Daha önce izin verilmişse hemen başlat
+        authorizationStatus = locationManager.authorizationStatus
+        if authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways {
+            locationManager.startUpdatingLocation()
+            locationManager.startUpdatingHeading()
+        }
     }
     
     func requestLocationPermission() {
+        authorizationStatus = locationManager.authorizationStatus
         locationManager.requestWhenInUseAuthorization()
     }
     
@@ -47,6 +55,7 @@ class LocationManager: NSObject, ObservableObject {
 extension LocationManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         location = locations.last
+        errorMessage = nil
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
