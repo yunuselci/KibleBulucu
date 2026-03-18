@@ -195,7 +195,7 @@ private struct PrayerGridTile: View {
     let palette: WidgetPalette
 
     var body: some View {
-        HStack(alignment: .center, spacing: 6) {
+        HStack(alignment: .center, spacing: 10) {
             Image(systemName: prayer.prayer.symbolName)
                 .font(.subheadline)
                 .foregroundStyle(isHighlighted ? .white : palette.secondaryText)
@@ -220,7 +220,7 @@ private struct PrayerGridTile: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(isHighlighted ? palette.accent : palette.cardFill)
+                .fill(isHighlighted ? palette.tileHighlightFill : palette.cardFill)
         )
     }
 
@@ -323,6 +323,10 @@ private struct WidgetPalette {
 
     var accent: Color {
         colorScheme == .dark ? Color(red: 0.76, green: 0.86, blue: 1.0) : Color(red: 0.20, green: 0.40, blue: 0.72)
+    }
+
+    var tileHighlightFill: Color {
+        colorScheme == .dark ? Color(red: 0.22, green: 0.44, blue: 0.78) : accent
     }
 
     var cardFill: Color {

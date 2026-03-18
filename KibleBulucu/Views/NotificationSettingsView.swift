@@ -11,20 +11,20 @@ struct NotificationSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(String(localized: "notifications_section_general")) {
-                    Toggle(String(localized: "notifications_enable_prayer_notifications"), isOn: Binding(
+                Section("Genel") {
+                    Toggle("Namaz Bildirimlerini Aç", isOn: Binding(
                         get: { settings.notificationsEnabled },
                         set: onNotificationsChanged
                     ))
 
-                    Toggle(String(localized: "notifications_play_default_sound"), isOn: Binding(
+                    Toggle("Varsayılan Bildirim Sesini Çal", isOn: Binding(
                         get: { settings.soundEnabled },
                         set: onSoundChanged
                     ))
                     .disabled(!settings.notificationsEnabled)
                 }
 
-                Section(String(localized: "notifications_section_individual_prayers")) {
+                Section("Tek Tek Namazlar") {
                     ForEach(Prayer.allCases) { prayer in
                         Toggle(prayer.displayName, isOn: Binding(
                             get: { settings.enabledPrayers[prayer] ?? true },
@@ -34,11 +34,11 @@ struct NotificationSettingsView: View {
                     }
                 }
             }
-            .navigationTitle(String(localized: "notifications_title"))
+            .navigationTitle("Bildirimler")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(String(localized: "common_done")) {
+                    Button("Bitti") {
                         dismiss()
                     }
                 }

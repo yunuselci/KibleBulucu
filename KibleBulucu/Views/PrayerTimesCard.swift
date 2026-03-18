@@ -20,9 +20,9 @@ struct PrayerTimesCard: View {
                     .lineLimit(1)
 
                 Menu {
-                    Button(String(localized: "prayer_menu_change_location"), action: onSelectCity)
-                    Button(String(localized: "prayer_menu_notifications"), action: onNotifications)
-                    Button(String(localized: "prayer_menu_refresh"), action: onRefresh)
+                    Button("Konumu Değiştir", action: onSelectCity)
+                    Button("Namaz Bildirimleri", action: onNotifications)
+                    Button("Yenile", action: onRefresh)
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .font(.title3)
@@ -32,7 +32,7 @@ struct PrayerTimesCard: View {
             Group {
                 if nextPrayer != nil {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("prayer_time_until_label")
+                        Text("Vaktin Çıkmasına:")
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
 
                         Text(countdownText)
@@ -41,9 +41,9 @@ struct PrayerTimesCard: View {
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("prayer_day_complete_title")
+                        Text("Bugünün vakitleri tamamlandı")
                             .font(.title3.weight(.semibold))
-                        Text("prayer_day_complete_message")
+                        Text("Namaz vakitleri yarın tekrar yenilenecek.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -51,7 +51,7 @@ struct PrayerTimesCard: View {
             }
 
             if isLoading {
-                ProgressView("prayer_times_loading")
+                ProgressView("Namaz vakitleri güncelleniyor…")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
@@ -62,7 +62,7 @@ struct PrayerTimesCard: View {
                     }
                 }
             } else if !isLoading {
-                Text("prayer_times_unavailable")
+                Text("Namaz vakitleri henüz hazır değil.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

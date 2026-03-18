@@ -47,6 +47,7 @@ struct WidgetDataProvider {
         }
 
         let nextPrayer = prayerTimes.sortedPrayers.first(where: { $0.time > referenceDate })
+            ?? prayerTimes.tomorrowFajrTime.map { WidgetPrayerTimeEntry(prayer: .fajr, time: $0) }
 
         return PrayerWidgetEntry(
             date: referenceDate,
