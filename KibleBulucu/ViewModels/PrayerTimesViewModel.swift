@@ -71,6 +71,7 @@ final class PrayerTimesViewModel: ObservableObject {
 
     var todayDateText: String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "tr_TR")
         formatter.setLocalizedDateFormatFromTemplate("d MMMM y")
         return formatter.string(from: prayerTimes?.date ?? Date())
     }
