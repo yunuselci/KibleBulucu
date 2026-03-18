@@ -62,6 +62,15 @@ final class CountdownManager: ObservableObject {
             )
         }
 
+        if let tomorrowFajr = prayerTimes.tomorrowFajrTime {
+            let tomorrowEntry = PrayerTimeEntry(prayer: .fajr, time: tomorrowFajr)
+            return CountdownSnapshot(
+                nextPrayer: tomorrowEntry,
+                currentPrayer: sorted.last?.prayer,
+                remainingTimeText: format(interval: tomorrowFajr.timeIntervalSince(now))
+            )
+        }
+
         return CountdownSnapshot(
             nextPrayer: nil,
             currentPrayer: sorted.last?.prayer,

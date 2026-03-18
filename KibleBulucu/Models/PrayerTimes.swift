@@ -83,6 +83,7 @@ struct PrayerTimes: Codable, Equatable {
     let timeZoneIdentifier: String
     let fetchedAt: Date
     let prayers: [PrayerTimeEntry]
+    let tomorrowFajrTime: Date?
 
     var sortedPrayers: [PrayerTimeEntry] {
         prayers.sorted { $0.time < $1.time }
@@ -129,7 +130,8 @@ struct PrayerTimes: Codable, Equatable {
             date: base,
             timeZoneIdentifier: TimeZone.current.identifier,
             fetchedAt: Date(),
-            prayers: entries
+            prayers: entries,
+            tomorrowFajrTime: nil
         )
     }
 }

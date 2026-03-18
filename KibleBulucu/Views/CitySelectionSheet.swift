@@ -20,11 +20,11 @@ struct CitySelectionSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(String(localized: "location_selection_section_selected_location")) {
+                Section("Seçili Konum") {
                     if let currentSelection {
                         Text(currentSelection.displayName)
                     } else {
-                        Text("location_selection_none")
+                        Text("Henüz bir konum seçilmedi.")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -34,7 +34,7 @@ struct CitySelectionSheet: View {
                         get: { selectedCountryID },
                         set: onSelectCountry
                     )) {
-                        Text("location_selection_choose_country").tag(String?.none)
+                        Text("Ülke Seçin").tag(String?.none)
                         ForEach(countries) { country in
                             Text(country.name).tag(Optional(country.id))
                         }
@@ -47,7 +47,7 @@ struct CitySelectionSheet: View {
                         get: { selectedCityID },
                         set: onSelectCity
                     )) {
-                        Text("location_selection_choose_city").tag(String?.none)
+                        Text("Şehir Seçin").tag(String?.none)
                         ForEach(cities) { city in
                             Text(city.name).tag(Optional(city.id))
                         }
@@ -61,7 +61,7 @@ struct CitySelectionSheet: View {
                         get: { selectedDistrictID },
                         set: onSelectDistrict
                     )) {
-                        Text("location_selection_choose_district").tag(String?.none)
+                        Text("İlçe Seçin").tag(String?.none)
                         ForEach(districts) { district in
                             Text(district.name).tag(Optional(district.id))
                         }
@@ -72,7 +72,7 @@ struct CitySelectionSheet: View {
 
                 if isLoading {
                     Section {
-                        ProgressView("location_selection_loading")
+                        ProgressView("Konumlar yükleniyor...")
                     }
                 }
 
@@ -84,7 +84,7 @@ struct CitySelectionSheet: View {
                 }
 
                 Section {
-                    Button(String(localized: "location_selection_save")) {
+                    Button("Seçimi Kaydet") {
                         onSave()
                         dismiss()
                     }
@@ -92,11 +92,11 @@ struct CitySelectionSheet: View {
                     .disabled(selectedDistrictID == nil)
                 }
             }
-            .navigationTitle(String(localized: "location_selection_title"))
+            .navigationTitle("Konum Seç")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(String(localized: "common_done")) {
+                    Button("Bitti") {
                         dismiss()
                     }
                 }

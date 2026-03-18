@@ -105,7 +105,7 @@ struct ContentView: View {
                     ProgressView()
                         .scaleEffect(1.2)
 
-                    Text("finding_location", bundle: .main)
+                    Text("Konum bulunuyor...")
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }

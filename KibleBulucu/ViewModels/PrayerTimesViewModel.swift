@@ -82,11 +82,11 @@ final class PrayerTimesViewModel: ObservableObject {
         if let prayerTimes {
             return "\(prayerTimes.city), \(prayerTimes.country)"
         }
-        return String(localized: "location_status_locating_city")
+        return "Şehir bulunuyor..."
     }
 
     var districtSummaryText: String {
-        selectedLocation?.district.name ?? prayerTimes?.district ?? String(localized: "location_status_district_not_selected")
+        selectedLocation?.district.name ?? prayerTimes?.district ?? "İlçe Seçilmedi"
     }
 
     var isUsingAutomaticLocation: Bool {
@@ -152,7 +152,7 @@ final class PrayerTimesViewModel: ObservableObject {
             let city = cities.first(where: { $0.id == cityID }),
             let district = districts.first(where: { $0.id == districtID })
         else {
-            errorMessage = String(localized: "location_selection_error_missing_fields")
+            errorMessage = "Lütfen ülke, şehir ve ilçe seçin."
             return
         }
 
@@ -294,7 +294,7 @@ final class PrayerTimesViewModel: ObservableObject {
                 let granted = try await notificationManager.requestAuthorizationIfNeeded()
                 if !granted {
                     settings.notificationsEnabled = false
-                    errorMessage = String(localized: "notifications_error_disabled_in_settings")
+                    errorMessage = "Bildirimler Ayarlar'da kapalı."
                 }
             }
 

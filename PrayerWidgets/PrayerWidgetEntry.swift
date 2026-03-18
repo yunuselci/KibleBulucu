@@ -25,7 +25,7 @@ enum WidgetPrayer: String, CaseIterable, Codable, Identifiable {
     var symbolName: String {
         switch self {
         case .fajr:
-            return "moon.stars.fill"
+            return "sparkles"
         case .sunrise:
             return "sunrise.fill"
         case .dhuhr:
@@ -35,7 +35,7 @@ enum WidgetPrayer: String, CaseIterable, Codable, Identifiable {
         case .maghrib:
             return "sunset.fill"
         case .isha:
-            return "sparkles"
+            return "moon.stars.fill"
         }
     }
 }
@@ -60,6 +60,7 @@ struct WidgetPrayerTimes: Codable {
     let timeZoneIdentifier: String
     let fetchedAt: Date
     let prayers: [WidgetPrayerTimeEntry]
+    let tomorrowFajrTime: Date?
 
     var sortedPrayers: [WidgetPrayerTimeEntry] {
         prayers.sorted { $0.time < $1.time }
@@ -90,7 +91,8 @@ struct PrayerWidgetEntry: TimelineEntry {
             date: now,
             timeZoneIdentifier: TimeZone.current.identifier,
             fetchedAt: now,
-            prayers: prayers
+            prayers: prayers,
+            tomorrowFajrTime: nil
         )
 
         return PrayerWidgetEntry(

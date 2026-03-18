@@ -126,6 +126,13 @@ final class PrayerAPIService {
 
         let referenceDate = try parseDate(day: todayEntry.miladiTarihKisaIso8601, timeString: todayEntry.ogle, timeZone: timeZone)
 
+        let tomorrowFajrTime: Date? = {
+            guard let todayIdx = days.firstIndex(where: { $0.miladiTarihKisaIso8601 == todayEntry.miladiTarihKisaIso8601 }),
+                  days.indices.contains(todayIdx + 1) else { return nil }
+            let tomorrowEntry = days[todayIdx + 1]
+            return try? parseDate(day: tomorrowEntry.miladiTarihKisaIso8601, timeString: tomorrowEntry.imsak, timeZone: timeZone)
+        }()
+
         return PrayerTimes(
             city: selection.city.name,
             country: selection.country.name,
@@ -134,7 +141,8 @@ final class PrayerAPIService {
             date: calendar.startOfDay(for: referenceDate),
             timeZoneIdentifier: timeZone.identifier,
             fetchedAt: Date(),
-            prayers: entries
+            prayers: entries,
+            tomorrowFajrTime: tomorrowFajrTime
         )
     }
 
