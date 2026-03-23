@@ -13,22 +13,45 @@ struct PrayerWidgetProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<PrayerWidgetEntry>) -> Void) {
-        let now = Date()
-        let currentEntry = store.makeEntry(referenceDate: now) ?? .placeholder
-        var entries = [currentEntry]
+        Task {
+            let now = Date()
+            let fetcher = WidgetPrayerFetcher()
 
-        if let prayerTimes = currentEntry.prayerTimes {
-            let futureEntries = prayerTimes.sortedPrayers
-                .filter { $0.time > now }
-                .map { prayer in
-                    store.makeEntry(referenceDate: prayer.time.addingTimeInterval(1)) ?? currentEntry
-                }
+            let wasStale = fetcher.isDataStale(at: now)
+            if wasStale {
+                try? await fetcher.fetchAndSave()
+            }
+            let isStillStale = wasStale && fetcher.isDataStale(at: now)
 
-            entries.append(contentsOf: futureEntries)
+            let currentEntry = store.makeEntry(referenceDate: now) ?? .placeholder
+            var entries = [currentEntry]
+
+            if let prayerTimes = currentEntry.prayerTimes {
+                let futureEntries = prayerTimes.sortedPrayers
+                    .filter { $0.time > now }
+                    .map { prayer in
+                        store.makeEntry(referenceDate: prayer.time.addingTimeInterval(1)) ?? currentEntry
+                    }
+
+                entries.append(contentsOf: futureEntries)
+            }
+
+            let hasFuturePrayers = currentEntry.prayerTimes?.sortedPrayers.contains(where: { $0.time > now }) ?? false
+            let refreshDate: Date
+            if isStillStale {
+                // Fetch failed (network error etc.) — retry in 30 minutes
+                refreshDate = now.addingTimeInterval(30 * 60)
+            } else if !hasFuturePrayers {
+                // All today's prayers are done — wake at midnight to fetch the new day
+                let tomorrow = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: 1, to: now)!)
+                refreshDate = tomorrow.addingTimeInterval(60)
+            } else {
+                // Normal daytime operation — refresh every hour
+                refreshDate = Calendar.current.date(byAdding: .hour, value: 1, to: now) ?? now.addingTimeInterval(3600)
+            }
+
+            completion(Timeline(entries: entries, policy: .after(refreshDate)))
         }
-
-        let refreshDate = Calendar.current.date(byAdding: .hour, value: 1, to: now) ?? now.addingTimeInterval(3600)
-        completion(Timeline(entries: entries, policy: .after(refreshDate)))
     }
 }
 
